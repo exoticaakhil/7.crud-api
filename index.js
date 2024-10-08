@@ -29,7 +29,7 @@ app.listen(PORT,() => {
             connectDb(process.env.MONGO_DEV)
          }
          if(process.env.MODE ==="production"){
-            connectDb(process.env.MONGO_DEV)
+            connectDb(process.env.MONGO_PROD)
          }
     console.log(`server is connected running @ http://localhost:${PORT}`)  
 })
