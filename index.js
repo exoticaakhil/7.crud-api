@@ -1,35 +1,40 @@
-const express = require('express')
-const { StatusCodes } = require('http-status-codes')
-require('dotenv').config()
-const connectDb=require('./db/dbConfig')
+const express = require('express');
+const { StatusCodes } = require('http-status-codes');
+const cors = require('cors');  // Make sure to import cors
+require('dotenv').config();
+const connectDb = require('./db/dbConfig');
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3000;  // Provide a fallback port if not set in .env
 
-const app = express()
+const app = express();
 
-// body parser config
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
+// Static files middleware (serving from "view" folder)
+app.use(express.static('view'));
 
-// index route
-app.get('/' , (req, res) => {
-    return res.status(StatusCodes.OK).json({ status: true , msg: `crud user api`})
-})
+// Body parser configuration
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// api route
-app.use('/api/user' , require('./route/userRouter'))
+// CORS configuration
+app.use(cors());
 
-// default route
+// Routes
+app.use('/', require('./route/templateRouter'));  // Template routes
+app.use('/api/user', require('./route/userRouter'));  // API user routes
+
+// Default 404 route
 app.all('*', async (req, res) => {
-    return res.status(StatusCodes.NOT_FOUND).json({ status: false , msg: ` requested path not found`})
-})
+    return res.status(StatusCodes.NOT_FOUND).json({ status: false, msg: 'Requested path not found' });
+});
 
-app.listen(PORT,() => {
-         if(process.env.MODE ==="development"){
-            connectDb(process.env.MONGO_DEV)
-         }
-         if(process.env.MODE ==="production"){
-            connectDb(process.env.MONGO_PROD)
-         }
-    console.log(`server is connected running @ http://localhost:${PORT}`)  
-})
+// Server listen and database connection logic
+app.listen(PORT, () => {
+    // Connect to the database depending on environment
+    if (process.env.MODE === 'development') {
+        connectDb(process.env.MONGO_DEV);
+    } else if (process.env.MODE === 'production') {
+        connectDb(process.env.MONGO_PROD);
+    }
+
+    console.log(`Server is running @ http://localhost:${PORT}`);
+});
